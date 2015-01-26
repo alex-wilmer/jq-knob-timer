@@ -2,8 +2,8 @@
 A countdown timer using [aterrien/jQuery-Knob](https://github.com/aterrien/jQuery-Knob)
 
 Dependencies:
+
     jQuery
-    
     jQuery Knob  
     Font Awesome (but it doesn't really need to..)
   
