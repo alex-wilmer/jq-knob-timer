@@ -1,87 +1,101 @@
-// //$(function() {
+$(document).ready(function() { 
 
-// $(document).ready(function() { 
+  var dial = $('.dial');
+  var startPause = $('.start-pause');
+  var reset = $('.reset');  
+  var multi = 0;  
+  var flipCounter = 0;
+  var text
+    , timer
+    , lastTime
+    , running;
 
-//   var timer, lastTime;
-//   var dial = $('.dial');
-//   var multiplier = 0;
-//   var startPause = $('#start-pause');
-//   var reset = $('#reset');
-//   var running = false;
+  dial.knob({
+    'max': 59
+  , 'stopper': false
+  , 'change': function(v) {
+      change(v);
+    }  
+  });
 
-//   dial.knob({
-//     'max': 59
-//   , 'change': function (v) {
-//       modulus(v);
-//     }
-//   });
+  var change = function(v) {
+    if (v >= 0) {
+      if (v % 60 == 0 && lastTime % 60 == 59)
+        multi++;        
+      if (v % 60 == 59 && lastTime % 60 == 0) 
+        if (multi > 0)
+          multi--;
+      text.val(v + (60 * (multi)));
+      lastTime = v;
+      dial.trigger('change');
+    }
+  }
 
-//   var modulus = function(v, b) {
-//     if (b) lastTime--;
-//     if (v >= 0) {
-//       if (v % 60 == 0 && lastTime % 60 == 59) {
-//         multiplier++;
-//         setTimeout(function() {
-//           configure(multiplier);
-//         }, 0);
-//       }
-//       if (v % 60 == 59 && lastTime % 60 == 0) {
-//         if (multiplier > 0) {
-//           multiplier--;
+  setTimeout(function() {
+    text = $('.dial')
+      .clone()
+      .removeClass('dial')
+      .addClass('.text')
+      .val(dial.val())
+      .show()
+      .insertAfter('.dial')
+      .keyup(function(e) {
+        if(e.keyCode == 13){
+          var v = parseInt(text.val());
+          if (typeof v === 'number' && v > 0) {
+            dial.val(v % 60).trigger('change');
+            multi = Math.floor(v/60);
+            text.blur();
+          }
+        }        
+      });
 
-//           setTimeout(function() {
-//             configure(multiplier);
-//             dial.val(parseInt(dial.val())+59);
-//             if (b) lastTime++;
-//           }, 0);
-//         }
-//       }
-//     }
+    dial.hide();
+  },0); 
 
-//     lastTime = v;
-//   }
+  var pause = function() {
+      running = false;
+      startPause.html('<i class="fa fa-play"></i>');
+      clearInterval(timer);
+  };
 
-//   var pause = function() {
-//       running = false;
-//       startPause.html('Start');
-//       clearInterval(timer);
-//   };
+  startPause.click(function() {
+    var time = text.val();
+    if (!running && time > 0) {
+      running = true;
+      startPause.html('<i class="fa fa-pause"></i>');
+      timer = setInterval(function() {
+        dial
+          .val(parseInt(dial.val())-1)
+          .trigger('change');         
+        text.val(parseInt(dial.val()) + (60 * (multi)));
+       
+        if (text.val() === '0') {
+          pause();
+          return text.val('Go!');
+        }
 
-//   startPause.click(function() {
-//     var time = dial.val();
-//     if (!running && time > 0) {
-//       running = true;
-//       startPause.html('Pause');
-//       timer = setInterval(function() {
-//         modulus(parseInt(dial.val())-1, true);          
-//         dial
-//           .val(parseInt(dial.val())-1)
-//           .trigger('change');        
-//         if (dial.val() === '0') {
-//           pause();
-//           dial.val('Go!');
-//         }
-//       }, 1000);
-//     }
-//     else pause();
-//   });
+        if (dial.val() === '0' && multi > 0) {
+          flipCounter++;
+          if (flipCounter === 2) {
+            dial.val((60 * multi) - 1).trigger('change');;
+            text.val((60 * multi) - 1);
+            multi--;
+            flipCounter = 0;
+          }
+        }    
+      }, 1000);
+    }
+    else pause();
+  });
 
-//   reset.click(function() {
-//     multiplier = 0;
-//     pause();
-//     configure(0);
-//     dial
-//       .val(0)
-//       .trigger('change');
-//   });  
+  reset.click(function() {
+    multi = 0;
+    pause();
+    dial
+      .val(0)
+      .trigger('change');
+    text.val(0);
+  });  
 
-//   var configure = function(multi) {
-//     dial.trigger(
-//       'configure', {
-//         'min': 60 * multi
-//       , 'max': (60 * (multi + 1)) - 1
-//     });    
-//   }
-
-// });
-// //});
+});
