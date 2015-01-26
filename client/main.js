@@ -13,6 +13,7 @@ $(document).ready(function() {
   dial.knob({
     'max': 59
   , 'stopper': false
+  , 'fgColor': '#000'
   , 'change': function(v) {
       change(v);
     }  
@@ -39,6 +40,7 @@ $(document).ready(function() {
       .val(dial.val())
       .show()
       .insertAfter('.dial')
+      .css('color', '#000')
       .keyup(function(e) {
         if(e.keyCode == 13){
           var v = parseInt(text.val());
