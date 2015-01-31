@@ -1,14 +1,28 @@
 $(document).ready(function() { 
 
-  var dial = $('.dial');
-  var startPause = $('.start-pause');
+  var dial = $('.dial'); 
+  var startPauseBtn = $('.start-pause');
   var reset = $('.reset');  
   var multi = 0;  
   var flipCounter = 0;
   var text
     , timer
-    , lastTime
-    , running;
+    , lastValue
+    , running
+    , startTime;
+
+  // Audio
+
+  var song = $('.song')[0];
+  var audio = new Audio(song.dataset.song + '.mp3');
+
+  $('.song').click(function() {
+    audio.src = this.dataset.song + '.mp3';
+    $('.song').removeClass('selected');
+    $(this).addClass('selected');
+  });
+
+  // Dial
 
   dial.knob({
     'max': 59
@@ -21,67 +35,61 @@ $(document).ready(function() {
 
   var change = function(v) {
     if (v >= 0) {
-      if (v % 60 == 0 && lastTime % 60 == 59)
+      if (v % 60 == 0 && lastValue % 60 == 59)
         multi++;        
-      if (v % 60 == 59 && lastTime % 60 == 0) 
+      if (v % 60 == 59 && lastValue % 60 == 0) 
         if (multi > 0)
           multi--;
-      text.val(v + (60 * (multi)));
-      lastTime = v;
+      text.html(v + (60 * (multi)));
+      lastValue = v;
       dial.trigger('change');
     }
   }
 
   setTimeout(function() {
-    text = $('.dial')
-      .clone()
-      .removeClass('dial')
-      .addClass('.text')
-      .val(dial.val())
-      .show()
+    text = $('<span class="text">0</span>')
+      .attr('style', dial.attr('style'))
       .insertAfter('.dial')
-      .css('color', '#000')
-      .keyup(function(e) {
-        if(e.keyCode == 13){
-          var v = parseInt(text.val());
-          if (typeof v === 'number' && v > 0) {
-            dial.val(v % 60).trigger('change');
-            multi = Math.floor(v/60);
-            text.blur();
-          }
-        }        
+      .css({
+        'color': '#000'
+      , 'margin-top': '70px' 
+      , 'cursor': 'pointer'
       });
+    
+    text.click(startPause);      
 
     dial.hide();
   },0); 
 
   var pause = function() {
       running = false;
-      startPause.html('<i class="fa fa-play"></i>');
+      startPauseBtn.html('<i class="fa fa-play"></i>');
       clearInterval(timer);
   };
 
-  startPause.click(function() {
-    var time = text.val();
+  var startPause = function () {
+    var time = startTime = parseInt(text.html());
     if (!running && time > 0) {
       running = true;
-      startPause.html('<i class="fa fa-pause"></i>');
+      startPauseBtn.html('<i class="fa fa-pause"></i>');
       timer = setInterval(function() {
         dial
           .val(parseInt(dial.val())-1)
           .trigger('change');         
-        text.val(parseInt(dial.val()) + (60 * (multi)));
+        text.html(parseInt(dial.val()) + (60 * (multi)));
        
-        if (text.val() === '0') {
+        if (text.html() === '0') {
           pause();
-          return text.val('Go!');
+          reset.html('<i class="fa fa-clock-o"></i>')
+          text.html('Go!');
+          return audio.play();
         }
 
         if (dial.val() === '0' && multi > 0) {
           flipCounter++;
           if (flipCounter === 2) {
             dial.val((60 * multi) - 1).trigger('change');;
-            text.val((60 * multi) - 1);
+            text.html((60 * multi) - 1);
             multi--;
             flipCounter = 0;
           }
@@ -89,15 +97,26 @@ $(document).ready(function() {
       }, 1000);
     }
     else pause();
-  });
+  }  
+
+  startPauseBtn.click(startPause);
 
   reset.click(function() {
+    if ($(this).html().indexOf('clock') > -1) {
+      audio.pause();
+      audio.currentTime = 0;
+      reset.html('<i class="fa fa-trash"></i>')
+      dial
+        .val(startTime % 60)
+        .trigger('change');      
+      return text.html(startTime)
+    }
     multi = 0;
     pause();
     dial
       .val(0)
       .trigger('change');
-    text.val(0);
+    text.html(0);
   });  
 
 });
