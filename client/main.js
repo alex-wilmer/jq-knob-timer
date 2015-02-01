@@ -2,7 +2,8 @@ $(document).ready(function() {
 
   var dial = $('.dial'); 
   var startPauseBtn = $('.start-pause');
-  var reset = $('.reset');  
+  var reset = $('.reset'); 
+  var mute = $('.mute'); 
   var multi = 0;  
   var flipCounter = 0;
   var text
@@ -13,13 +14,17 @@ $(document).ready(function() {
 
   // Audio
 
-  var song = $('.song')[0];
-  var audio = new Audio(song.dataset.song + '.mp3');
+  var audio = new Audio('//a.clyp.it/uwz5c5b5.mp3');
 
-  $('.song').click(function() {
-    audio.src = this.dataset.song + '.mp3';
-    $('.song').removeClass('selected');
-    $(this).addClass('selected');
+  mute.click(function() {
+    if (audio.volume === 1) {
+      audio.volume = 0;
+      mute.html('<i class="fa fa-volume-off"></i>');
+    }
+    else {
+      audio.volume = 1;
+      mute.html('<i class="fa fa-volume-up"></i>');      
+    }
   });
 
   // Dial
@@ -102,7 +107,7 @@ $(document).ready(function() {
   startPauseBtn.click(startPause);
 
   reset.click(function() {
-    if ($(this).html().indexOf('clock') > -1) {
+    if (reset.html().indexOf('clock') > -1) {
       audio.pause();
       audio.currentTime = 0;
       reset.html('<i class="fa fa-trash"></i>')
