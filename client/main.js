@@ -73,6 +73,8 @@ $(document).ready(function() {
   };
 
   var startPause = function () {
+    audio.play();
+    audio.pause();
     var time = startTime = parseInt(text.html());
     if (!running && time > 0) {
       running = true;
@@ -85,7 +87,7 @@ $(document).ready(function() {
        
         if (text.html() === '0') {
           pause();
-          reset.html('<i class="fa fa-clock-o"></i>')
+          reset.html('<i class="fa fa-refresh"></i>')
           text.html('Go!');
           return audio.play();
         }
@@ -107,21 +109,15 @@ $(document).ready(function() {
   startPauseBtn.click(startPause);
 
   reset.click(function() {
-    if (reset.html().indexOf('clock') > -1) {
+    if (startTime > 0) {
       audio.pause();
       audio.currentTime = 0;
-      reset.html('<i class="fa fa-trash"></i>')
+      reset.html('<i class="fa fa-refresh"></i>')
       dial
         .val(startTime % 60)
         .trigger('change');      
       return text.html(startTime)
     }
-    multi = 0;
-    pause();
-    dial
-      .val(0)
-      .trigger('change');
-    text.html(0);
   });  
 
 });
